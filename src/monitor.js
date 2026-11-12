@@ -415,11 +415,18 @@ export class Monitor {
     // A change not sent (over the budget of the cycle, or refused) is not
     // remembered: it is sent at the next cycle.
     let fired = 0;
+    // A declaration whose "new" event was not sent keeps its other event for
+    // the next cycle too: both go together, in order, never one twice.
+    const postponed = new Set();
     for (const change of changes) {
-      const sent = fired < budget && (await this.fire(county, change));
+      const sent =
+        fired < budget &&
+        !postponed.has(change.declaration.id) &&
+        (await this.fire(county, change));
       if (sent) {
         fired += 1;
       } else if (change.key === TRIGGERS.NEW) {
+        postponed.add(change.declaration.id);
         delete entry.known[change.declaration.id];
       } else if (entry.known[change.declaration.id]) {
         entry.known[change.declaration.id].individual = false;
