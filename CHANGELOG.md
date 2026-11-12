@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-12
+
 ### Added
 
 - FEMA disaster declarations of your US county, read from OpenFEMA without an account: one device
@@ -24,4 +26,5 @@ the notes of the version's GitHub Release.
 - Dashboard widget: one row per county, its active declarations, programs, deadline and links.
 - Texts and documentation in English, French, German and Spanish.
 
-[Unreleased]: https://github.com/guim31/gladys-fema/commits/main
+[Unreleased]: https://github.com/guim31/gladys-fema/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-fema/releases/tag/v1.0.0
