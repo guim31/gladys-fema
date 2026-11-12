@@ -1,0 +1,31 @@
+{
+  "input": {
+    "lat": 30.159,
+    "lon": -85.66,
+    "censusYear": "2020"
+  },
+  "results": [
+    {
+      "block_fips": "120050020001037",
+      "bbox": [-85.660362, 30.158815, -85.659629, 30.160646],
+      "county_fips": "12005",
+      "county_name": "Bay County",
+      "state_fips": "12",
+      "state_code": "FL",
+      "state_name": "Florida",
+      "block_pop_2020": 0,
+      "amt": "AMT004",
+      "bea": "BEA035",
+      "bta": "BTA340",
+      "cma": "CMA283",
+      "eag": "EAG003",
+      "ivm": "IVM283",
+      "mea": "MEA009",
+      "mta": "MTA037",
+      "pea": "PEA072",
+      "rea": "REA002",
+      "rpc": "RPC002",
+      "vpc": "VPC004"
+    }
+  ]
+}

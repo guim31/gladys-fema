@@ -1,177 +1,589 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "FEMA Disasters",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "FEMA disaster declarations and aid programs for your US county.",
+    "fr": "Déclarations de catastrophe FEMA et aides ouvertes pour votre comté américain.",
+    "de": "FEMA-Katastrophenerklärungen und Hilfsprogramme für dein US-County.",
+    "es": "Declaraciones de desastre de FEMA y ayudas abiertas para su condado de EE. UU."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
-  "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "docker_image": "ghcr.io/guim31/gladys-fema:1.0.0",
+  "gladys_version": ">=5.3.0",
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-fema/main/cover.png",
+  "categories": ["environment", "security"],
+  "countries": ["US"],
+  "transports": ["cloud"],
+  "location": true,
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Your county",
+        "fr": "Votre comté",
+        "de": "Dein County",
+        "es": "Su condado"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Follow the FEMA disaster declarations of your county. Leave the field empty to use the county of your house (its location in Gladys), or type up to 8 county FIPS codes. Save, then create the devices in the Discover tab.",
+        "fr": "Suivez les déclarations de catastrophe FEMA de votre comté. Laissez le champ vide pour utiliser le comté de votre maison (sa position dans Gladys), ou saisissez jusqu'à 8 codes FIPS de comté. Enregistrez, puis créez les appareils dans l'onglet Découverte.",
+        "de": "Verfolge die FEMA-Katastrophenerklärungen deines Countys. Lass das Feld leer, um das County deines Hauses (sein Standort in Gladys) zu nutzen, oder trage bis zu 8 County-FIPS-Codes ein. Speichere und lege dann die Geräte im Tab „Entdecken“ an.",
+        "es": "Siga las declaraciones de desastre de FEMA de su condado. Deje el campo vacío para usar el condado de su casa (su ubicación en Gladys) o introduzca hasta 8 códigos FIPS de condado. Guarde y cree los dispositivos en la pestaña Descubrir."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://github.com/guim31/gladys-fema/blob/main/docs/en.md",
+          "label": {
+            "en": "Setup guide",
+            "fr": "Guide d'installation",
+            "de": "Installationsanleitung",
+            "es": "Guía de instalación"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "about",
+      "type": "section",
+      "label": {
+        "en": "Sources and limits",
+        "fr": "Sources et limites",
+        "de": "Quellen und Grenzen",
+        "es": "Fuentes y límites"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
-    },
-    {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
       "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+        "en": "Data from OpenFEMA, read without an account. Declarations are administrative decisions, often made days after the event: not a safety alert system. Not affiliated with FEMA.",
+        "fr": "Données OpenFEMA, lues sans compte. Les déclarations sont des décisions administratives, souvent prises des jours après l'événement : pas un système d'alerte de sécurité. Non affiliée à la FEMA.",
+        "de": "Daten von OpenFEMA, ohne Konto gelesen. Erklärungen sind Verwaltungsentscheidungen, oft Tage nach dem Ereignis: kein Sicherheitswarnsystem. Nicht mit der FEMA verbunden.",
+        "es": "Datos de OpenFEMA, leídos sin cuenta. Las declaraciones son decisiones administrativas, a menudo tomadas días después del evento: no es un sistema de alerta de seguridad. Sin afiliación con FEMA."
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
-    },
-    {
-      "key": "unit",
-      "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
-      "required": false,
-      "default": "celsius",
-      "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+      "links": [
+        {
+          "url": "https://www.fema.gov/about/openfema/terms-conditions",
+          "label": {
+            "en": "OpenFEMA terms",
+            "fr": "Conditions OpenFEMA",
+            "de": "OpenFEMA-Bedingungen",
+            "es": "Condiciones de OpenFEMA"
+          }
+        },
+        {
+          "url": "https://www.census.gov/library/reference/code-lists/ansi.html",
+          "label": {
+            "en": "County FIPS codes",
+            "fr": "Codes FIPS des comtés",
+            "de": "County-FIPS-Codes",
+            "es": "Códigos FIPS de condados"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "key": "counties",
+      "type": "string",
+      "label": {
+        "en": "County FIPS codes",
+        "fr": "Codes FIPS des comtés",
+        "de": "County-FIPS-Codes",
+        "es": "Códigos FIPS de condados"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "5 digits each, separated by commas. Empty: the county of your house.",
+        "fr": "5 chiffres chacun, séparés par des virgules. Vide : le comté de votre maison.",
+        "de": "Je 5 Ziffern, durch Kommas getrennt. Leer: das County deines Hauses.",
+        "es": "5 dígitos cada uno, separados por comas. Vacío: el condado de su casa."
+      },
+      "placeholder": {
+        "en": "12086, 06037",
+        "fr": "12086, 06037",
+        "de": "12086, 06037",
+        "es": "12086, 06037"
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": ""
+    },
+    {
+      "key": "refresh_interval",
+      "type": "select",
+      "label": {
+        "en": "Refresh interval",
+        "fr": "Intervalle de mise à jour",
+        "de": "Aktualisierungsintervall",
+        "es": "Intervalo de actualización"
+      },
+      "options": [
+        {
+          "value": "30",
+          "label": {
+            "en": "30 minutes",
+            "fr": "30 minutes",
+            "de": "30 Minuten",
+            "es": "30 minutos"
+          }
+        },
+        {
+          "value": "60",
+          "label": {
+            "en": "1 hour",
+            "fr": "1 heure",
+            "de": "1 Stunde",
+            "es": "1 hora"
+          }
+        },
+        {
+          "value": "180",
+          "label": {
+            "en": "3 hours",
+            "fr": "3 heures",
+            "de": "3 Stunden",
+            "es": "3 horas"
+          }
+        },
+        {
+          "value": "360",
+          "label": {
+            "en": "6 hours",
+            "fr": "6 heures",
+            "de": "6 Stunden",
+            "es": "6 horas"
+          }
+        }
+      ],
+      "required": true,
+      "default": "60"
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the names and messages",
+        "fr": "Langue des noms et des messages",
+        "de": "Sprache der Namen und Meldungen",
+        "es": "Idioma de los nombres y mensajes"
+      },
+      "description": {
+        "en": "Feature names are set when the devices are created.",
+        "fr": "Les noms des fonctionnalités sont fixés à la création des appareils.",
+        "de": "Die Funktionsnamen werden beim Anlegen der Geräte festgelegt.",
+        "es": "Los nombres de las funciones se fijan al crear los dispositivos."
+      },
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ],
+      "required": true,
+      "default": "fr"
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
+      "key": "check_now",
+      "label": {
+        "en": "Show the current declarations",
+        "fr": "Afficher les déclarations en cours",
+        "de": "Laufende Erklärungen anzeigen",
+        "es": "Mostrar las declaraciones en curso"
+      },
+      "timeout_seconds": 60
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "key": "new_declaration",
+      "label": {
+        "en": "FEMA: new declaration for my county",
+        "fr": "FEMA : nouvelle déclaration pour mon comté",
+        "de": "FEMA: neue Erklärung für mein County",
+        "es": "FEMA: nueva declaración para mi condado"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "FEMA declares a major disaster, an emergency or a fire management assistance for a followed county.",
+        "fr": "La FEMA déclare une catastrophe majeure, une urgence ou une aide à la lutte contre l'incendie pour un comté suivi.",
+        "de": "Die FEMA erklärt eine Großkatastrophe, einen Notstand oder eine Brandbekämpfungshilfe für ein verfolgtes County.",
+        "es": "FEMA declara un desastre mayor, una emergencia o una ayuda para la gestión de incendios en un condado seguido."
       },
       "fields": [
         {
-          "key": "device",
+          "key": "county",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
+          "label": {
+            "en": "County",
+            "fr": "Comté",
+            "de": "County",
+            "es": "Condado"
+          }
         },
         {
-          "key": "target",
+          "key": "declaration_type",
           "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
+          "label": {
+            "en": "Declaration types",
+            "fr": "Types de déclaration",
+            "de": "Erklärungsarten",
+            "es": "Tipos de declaración"
+          },
           "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
+            {
+              "value": "major_disaster",
+              "label": {
+                "en": "Major disaster",
+                "fr": "Catastrophe majeure",
+                "de": "Großkatastrophe",
+                "es": "Desastre mayor"
+              }
+            },
+            {
+              "value": "emergency",
+              "label": {
+                "en": "Emergency",
+                "fr": "Urgence",
+                "de": "Notstand",
+                "es": "Emergencia"
+              }
+            },
+            {
+              "value": "fire_management",
+              "label": {
+                "en": "Fire management",
+                "fr": "Lutte contre l'incendie",
+                "de": "Brandbekämpfung",
+                "es": "Gestión de incendios"
+              }
+            }
           ]
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "county_name",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "County",
+            "fr": "Comté",
+            "de": "County",
+            "es": "Condado"
+          }
+        },
+        {
+          "key": "declaration_id",
+          "type": "string",
+          "label": {
+            "en": "Declaration number (DR-4955-FL)",
+            "fr": "Numéro de déclaration (DR-4955-FL)",
+            "de": "Nummer der Erklärung (DR-4955-FL)",
+            "es": "Número de declaración (DR-4955-FL)"
+          }
+        },
+        {
+          "key": "declaration_type_name",
+          "type": "string",
+          "label": {
+            "en": "Declaration type, in words",
+            "fr": "Type de déclaration, en toutes lettres",
+            "de": "Erklärungsart, ausgeschrieben",
+            "es": "Tipo de declaración, en palabras"
+          }
+        },
+        {
+          "key": "incident_type",
+          "type": "string",
+          "label": {
+            "en": "Incident type (FEMA, in English)",
+            "fr": "Type d'incident (FEMA, en anglais)",
+            "de": "Ereignisart (FEMA, auf Englisch)",
+            "es": "Tipo de incidente (FEMA, en inglés)"
+          }
+        },
+        {
+          "key": "incident_type_name",
+          "type": "string",
+          "label": {
+            "en": "Incident type, in words",
+            "fr": "Type d'incident, en toutes lettres",
+            "de": "Ereignisart, ausgeschrieben",
+            "es": "Tipo de incidente, en palabras"
+          }
+        },
+        {
+          "key": "title",
+          "type": "string",
+          "label": {
+            "en": "Title",
+            "fr": "Intitulé",
+            "de": "Titel",
+            "es": "Título"
+          }
+        },
+        {
+          "key": "declaration_date",
+          "type": "string",
+          "label": {
+            "en": "Declaration date",
+            "fr": "Date de déclaration",
+            "de": "Datum der Erklärung",
+            "es": "Fecha de declaración"
+          }
+        },
+        {
+          "key": "individual_assistance",
+          "type": "boolean",
+          "label": {
+            "en": "Individual Assistance open",
+            "fr": "Aide aux particuliers ouverte",
+            "de": "Hilfe für Privatpersonen offen",
+            "es": "Asistencia individual abierta"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "FEMA page",
+            "fr": "Page FEMA",
+            "de": "FEMA-Seite",
+            "es": "Página de FEMA"
+          }
+        }
+      ]
+    },
+    {
+      "key": "individual_assistance_opened",
+      "label": {
+        "en": "FEMA: Individual Assistance opened",
+        "fr": "FEMA : aide aux particuliers ouverte",
+        "de": "FEMA: Hilfe für Privatpersonen geöffnet",
+        "es": "FEMA: asistencia individual abierta"
+      },
+      "description": {
+        "en": "Residents of a followed county can apply for FEMA assistance (new declaration or amendment).",
+        "fr": "Les habitants d'un comté suivi peuvent demander l'aide de la FEMA (nouvelle déclaration ou modification).",
+        "de": "Bewohner eines verfolgten Countys können FEMA-Hilfe beantragen (neue Erklärung oder Änderung).",
+        "es": "Los residentes de un condado seguido pueden solicitar la ayuda de FEMA (nueva declaración o modificación)."
+      },
+      "fields": [
+        {
+          "key": "county",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "County",
+            "fr": "Comté",
+            "de": "County",
+            "es": "Condado"
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "county_name",
+          "type": "string",
+          "label": {
+            "en": "County",
+            "fr": "Comté",
+            "de": "County",
+            "es": "Condado"
+          }
+        },
+        {
+          "key": "declaration_id",
+          "type": "string",
+          "label": {
+            "en": "Declaration number (DR-4955-FL)",
+            "fr": "Numéro de déclaration (DR-4955-FL)",
+            "de": "Nummer der Erklärung (DR-4955-FL)",
+            "es": "Número de declaración (DR-4955-FL)"
+          }
+        },
+        {
+          "key": "incident_type_name",
+          "type": "string",
+          "label": {
+            "en": "Incident type, in words",
+            "fr": "Type d'incident, en toutes lettres",
+            "de": "Ereignisart, ausgeschrieben",
+            "es": "Tipo de incidente, en palabras"
+          }
+        },
+        {
+          "key": "title",
+          "type": "string",
+          "label": {
+            "en": "Title",
+            "fr": "Intitulé",
+            "de": "Titel",
+            "es": "Título"
+          }
+        },
+        {
+          "key": "deadline",
+          "type": "string",
+          "label": {
+            "en": "Registration deadline",
+            "fr": "Date limite de demande",
+            "de": "Antragsfrist",
+            "es": "Fecha límite de solicitud"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "FEMA page",
+            "fr": "Page FEMA",
+            "de": "FEMA-Seite",
+            "es": "Página de FEMA"
+          }
+        },
+        {
+          "key": "registration_url",
+          "type": "string",
+          "label": {
+            "en": "Where to apply",
+            "fr": "Où faire la demande",
+            "de": "Wo beantragen",
+            "es": "Dónde solicitar"
+          }
         }
       ]
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "read_declarations",
+      "label": {
+        "en": "FEMA: read the declarations",
+        "fr": "FEMA : lire les déclarations",
+        "de": "FEMA: Erklärungen lesen",
+        "es": "FEMA: leer las declaraciones"
       },
-      "timeout_seconds": 15,
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ],
+      "description": {
+        "en": "The active declarations of your counties as one sentence, to send by message or read aloud.",
+        "fr": "Les déclarations en cours de vos comtés en une phrase, à envoyer par message ou à lire à voix haute.",
+        "de": "Die laufenden Erklärungen deiner Countys als ein Satz, zum Senden per Nachricht oder zum Vorlesen.",
+        "es": "Las declaraciones en curso de sus condados en una frase, para enviar por mensaje o leer en voz alta."
+      },
+      "timeout_seconds": 60,
       "outputs": [
         {
-          "key": "signalled",
+          "key": "text",
+          "type": "string",
+          "label": {
+            "en": "Declarations, in one sentence",
+            "fr": "Déclarations, en une phrase",
+            "de": "Erklärungen, in einem Satz",
+            "es": "Declaraciones, en una frase"
+          }
+        },
+        {
+          "key": "active_count",
+          "type": "number",
+          "label": {
+            "en": "Active declarations",
+            "fr": "Déclarations en cours",
+            "de": "Laufende Erklärungen",
+            "es": "Declaraciones en curso"
+          }
+        },
+        {
+          "key": "assistance_open",
           "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "label": {
+            "en": "Individual Assistance open",
+            "fr": "Aide aux particuliers ouverte",
+            "de": "Hilfe für Privatpersonen offen",
+            "es": "Asistencia individual abierta"
+          }
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "declarations",
+      "label": {
+        "en": "FEMA declarations",
+        "fr": "Déclarations FEMA",
+        "de": "FEMA-Erklärungen",
+        "es": "Declaraciones FEMA"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Active disaster declarations and open aid of your counties.",
+        "fr": "Déclarations de catastrophe en cours et aides ouvertes de vos comtés.",
+        "de": "Laufende Katastrophenerklärungen und offene Hilfen deiner Countys.",
+        "es": "Declaraciones de desastre en curso y ayudas abiertas de sus condados."
+      },
+      "icon": "alert-triangle",
+      "settings": [
+        {
+          "key": "show_link",
+          "type": "boolean",
+          "label": {
+            "en": "Show the link to FEMA",
+            "fr": "Afficher le lien vers la FEMA",
+            "de": "Link zur FEMA anzeigen",
+            "es": "Mostrar el enlace a FEMA"
+          },
+          "required": false,
+          "default": true
+        }
+      ]
     }
   ]
 }

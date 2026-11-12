@@ -31,16 +31,20 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
-src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+index.js                          SDK wiring only, graceful shutdown
+src/app.js                        registers every SDK handler (shared with the tests)
+src/monitor.js                    counties, refresh timer, states, scene triggers, status
+src/openfema.js                   OpenFEMA and FCC clients, active-declaration rules, summary
+src/counties.js, counties.json    Census 2020 county FIPS list (validation, names)
+src/device.js                     one device per county: features and names
+src/actions.js                    configuration action check_now, scene action read_declarations
+src/widgets.js                    dashboard widget `declarations`
+src/messages.js                   texts in en/fr/de/es, date formatting
+src/store.js                      /data/fema.json: declarations already seen per county
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
-gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+gladys-assistant-integration.json manifest
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys
+test/                             node --test, SDK fake Gladys + fake OpenFEMA/FCC (fixtures recorded 12/11/2026)
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +74,8 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** is in English, French, German and Spanish: action
+  messages, manifest texts, and `docs/*.md`, kept in sync.
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -251,3 +255,23 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Intégration FEMA (OpenFEMA)
+
+- Jeu `DisasterDeclarationsSummaries` v2, sans clé : une ligne par déclaration **et** zone désignée. Requête par
+  comté : `fipsStateCode eq 'SS' and (fipsCountyCode eq 'CCC' or designatedArea eq 'Statewide')`, `$top=1000`
+  (un comté chargé en a ~300). `metadata.count` vaut 0 sans `$inlinecount` : ne pas s'y fier. `$apply` (groupby)
+  n'est pas pris en charge : la liste des `incidentType` est figée dans `src/messages.js`, un type inconnu
+  s'affiche tel quel.
+- `fipsCountyCode` `000` sert **à la fois** aux déclarations « Statewide » et aux terres tribales
+  (`tribalRequest: true`, ou zone nommée d'après la tribu) : on ne garde que `designatedArea eq 'Statewide'`.
+- Dates à minuit UTC = jours calendaires : formater en UTC (`formatDay`), sinon la veille s'affiche aux
+  États-Unis ; une date limite compte jusqu'à la fin de son jour.
+- `incidentEndDate` reste **toujours vide** pour les déclarations FM (lutte contre l'incendie), et parfois des
+  mois pour les DR/EM : règle « en cours » dans `isActive` (30 jours, période ouverte bornée à 1 an, ou
+  demandes IA ouvertes), documentée dans les quatre docs.
+- IA = `ihProgramDeclared` (programme actuel) **ou** `iaProgramDeclared` (ancien, avant 2002).
+- Comtés : FEMA garde les **huit comtés historiques du Connecticut** (pas les régions de planification de 2022) :
+  liste du Census **2020** embarquée, et FCC Area API appelée avec `censusYear=2020`.
+- Les pages `www.fema.gov` (hors API) répondent 403 aux robots : ne pas les tester par `curl`, ne pas contourner.
+- Logo FEMA : emblème protégé (DHS), pas d'usage sans autorisation : la cover est un pictogramme maison.
