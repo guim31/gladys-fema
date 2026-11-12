@@ -72,7 +72,7 @@ out and:
   30 days for a fire management declaration, which never gets one);
 - or its Individual Assistance registration is still open (until the last filing date).
 
-"Individual Assistance" is on while the registration of an active declaration is open. "Public
+"Individual Assistance" is on while the registration of an active declaration is open (60 days after the declaration while FEMA gives no deadline). "Public
 Assistance" and "Hazard Mitigation" are on when an active declaration includes them.
 
 ## Device
@@ -148,7 +148,8 @@ interval, and returns:
 ## Troubleshooting
 
 - **"No county"**: give your house a location in Gladys (Settings → Houses), or type county FIPS codes.
-- **"Your house is not in the United States"**: type the FIPS codes of the counties to follow.
+- **"No US county at the location of your house"**: the house is outside the United States (or its location is in the sea): type the FIPS codes of the counties to follow.
+- **The house moved to another county**: a new device is offered in the Discover tab; delete the device of the old county, which no longer gets values.
 - **"Ignored (not a county FIPS code)"**: check the code in the Census list (5 digits, leading zero
   included or not: `6037` and `06037` both mean Los Angeles County).
 - **"OpenFEMA does not answer"**: the service is down or unreachable from the Gladys host. The last

@@ -141,7 +141,6 @@ function declarationOf(rows) {
     individual: any('ihProgramDeclared') || any('iaProgramDeclared'),
     public: any('paProgramDeclared'),
     mitigation: any('hmProgramDeclared'),
-    statewide: rows.every((row) => row.designatedArea === 'Statewide'),
     url: disasterUrl(first.disasterNumber),
   };
 }
@@ -223,10 +222,16 @@ export function isActive(declaration, now) {
   return now - declaredAt <= days * DAY;
 }
 
+// Without a deadline from FEMA yet, registration is taken as open this long
+// after the declaration (FEMA usually gives 60 days to register).
+export const REGISTRATION_DAYS = 60;
+
 /** Individual Assistance registration open now on this declaration. */
 export const registrationOpen = (declaration, now) =>
   declaration.individual &&
-  (declaration.registrationDeadline === null || endOfDay(declaration.registrationDeadline) > now);
+  (declaration.registrationDeadline === null
+    ? now - declaration.declaredAt <= REGISTRATION_DAYS * DAY
+    : endOfDay(declaration.registrationDeadline) > now);
 
 /** The summary of a county: what the device and the widget show. */
 export function summarize(declarations, now) {

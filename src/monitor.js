@@ -193,16 +193,25 @@ export class Monitor {
     }
   }
 
-  /** Publish the devices of the followed counties, when they changed. */
-  async publishDiscovered() {
+  /**
+   * Publish the devices of the followed counties, when they changed (always on
+   * a scan request: the user may have deleted a device). A failure is retried
+   * at the next cycle and never stops the reading of OpenFEMA.
+   */
+  async publishDiscovered({ force = false } = {}) {
     const key = JSON.stringify([this.config.language, this.counties.map((c) => c.fips)]);
-    if (key === this.discovered) {
+    if (key === this.discovered && !force) {
       return;
     }
-    await this.gladys.publishDiscoveredDevices(
-      this.counties.map((county) => buildDevice(this.gladys, county, this.config.language)),
-    );
-    this.discovered = key;
+    try {
+      await this.gladys.publishDiscoveredDevices(
+        this.counties.map((county) => buildDevice(this.gladys, county, this.config.language)),
+      );
+      this.discovered = key;
+      this.recovered('discovery', 'Publishing the devices works again');
+    } catch (err) {
+      this.failed('discovery', 'warn', `Publishing the devices failed: ${err.message}`);
+    }
   }
 
   /** The device of a county as Gladys has it (created by the user), or undefined. */
@@ -220,11 +229,20 @@ export class Monitor {
 
   /** The followed counties: the configured ones, else the county of the house. */
   async resolveCounties() {
+    // False while the county of the house cannot be known (houses or FCC
+    // unreadable): the counties seen before are then not forgotten.
+    this.countiesKnown = true;
     if (this.config.counties.length > 0) {
       this.houseState = 'ok';
       return this.config.counties.map(countyOf);
     }
     const house = await this.readHouse();
+    if (house === undefined) {
+      // Never read: Gladys may not be ready yet. Keep what was followed.
+      this.countiesKnown = false;
+      this.houseState = this.counties.length > 0 ? 'ok' : 'none';
+      return this.counties;
+    }
     if (!house) {
       this.houseState = 'none';
       return [];
@@ -242,6 +260,7 @@ export class Monitor {
         this.failed('geocoder', 'warn', `Cannot find the county of the house: ${err.message}`);
         // The county found before, if any, is kept until the API answers.
         if (this.houseCounty.fips === null) {
+          this.countiesKnown = false;
           this.houseState = 'down';
           return [];
         }
@@ -266,7 +285,8 @@ export class Monitor {
         this.failed('houses', 'warn', `Cannot read the houses of Gladys: ${err.message}`);
       }
     }
-    return this.house ?? null;
+    // undefined: never read; null: no located house.
+    return this.house;
   }
 
   // --- Cycles ------------------------------------------------------------------
@@ -293,29 +313,41 @@ export class Monitor {
       }
     }
     let failure = null;
+    let succeeded = 0;
     let fired = 0;
     for (const county of this.counties) {
+      let declarations;
       try {
-        const declarations = await fetchDeclarations(this.fetch, county);
+        declarations = await fetchDeclarations(this.fetch, county);
         this.results.set(county.fips, {
           declarations,
           summary: summarize(declarations, this.now()),
         });
-        fired += await this.detectChanges(county, declarations, MAX_EVENTS_PER_CYCLE - fired);
+        succeeded += 1;
       } catch (err) {
         failure = err;
+        continue;
+      }
+      try {
+        fired += await this.detectChanges(county, declarations, MAX_EVENTS_PER_CYCLE - fired);
+      } catch (err) {
+        this.failed('triggers', 'error', `Detecting the changes of ${county.label} failed`, err);
       }
     }
-    this.forgetUnfollowed();
+    if (this.countiesKnown) {
+      this.forgetUnfollowed();
+    }
     this.store.save(this.data);
     if (failure) {
       this.failed('openfema', 'warn', `OpenFEMA unreachable: ${failure.message}`);
     } else if (this.counties.length > 0) {
       this.recovered('openfema', 'OpenFEMA answers again');
     }
-    if (this.results.size > 0 && !failure) {
+    if (succeeded > 0) {
       this.lastSuccessAt = this.now();
     }
+    // Every county read: none of them is failing any more.
+    this.allFailed = this.counties.length > 0 && succeeded === 0;
     logger.debug(`Refresh cycle: ${this.counties.length} county(ies) read`);
     this.recovered('cycle', 'Refresh cycles work again');
     await this.publishStates();
@@ -368,9 +400,10 @@ export class Monitor {
       logger.debug(`${county.label}: ${recent.length} recent declaration(s) taken as known`);
       return 0;
     }
+    const known = entry.known && typeof entry.known === 'object' ? entry.known : {};
     const changes = [];
     for (const declaration of recent) {
-      const before = entry.known[declaration.id];
+      const before = known[declaration.id];
       if (!before) {
         changes.push({ key: TRIGGERS.NEW, declaration });
       }
@@ -378,31 +411,41 @@ export class Monitor {
         changes.push({ key: TRIGGERS.ASSISTANCE, declaration });
       }
     }
-    entry.known = remember(entry.known);
+    entry.known = remember(known);
+    // A change not sent (over the budget of the cycle, or refused) is not
+    // remembered: it is sent at the next cycle.
     let fired = 0;
     for (const change of changes) {
-      if (fired >= budget) {
-        logger.debug(`${changes.length - fired} more change(s) not sent to the scenes`);
-        break;
+      const sent = fired < budget && (await this.fire(county, change));
+      if (sent) {
+        fired += 1;
+      } else if (change.key === TRIGGERS.NEW) {
+        delete entry.known[change.declaration.id];
+      } else if (entry.known[change.declaration.id]) {
+        entry.known[change.declaration.id].individual = false;
       }
-      await this.fire(county, change);
-      fired += 1;
+    }
+    if (changes.length > fired) {
+      logger.debug(`${changes.length - fired} change(s) left for the next cycle`);
     }
     return fired;
   }
 
+  /** Fire one scene trigger; resolves true once Gladys accepted it. */
   async fire(county, { key, declaration }) {
-    logger.info(
-      key === TRIGGERS.NEW
-        ? `New declaration for ${county.label}: ${declaration.id} ${declaration.title}`
-        : `Individual Assistance opened for ${county.label}: ${declaration.id}`,
-    );
     try {
       await this.gladys.publishSceneEvent(key, this.eventData(county, key, declaration));
       this.recovered('scene', 'Scene triggers work again');
     } catch (err) {
       this.failed('scene', 'warn', `Firing the scene trigger failed: ${err.message}`);
+      return false;
     }
+    logger.info(
+      key === TRIGGERS.NEW
+        ? `New declaration for ${county.label}: ${declaration.id} ${declaration.title}`
+        : `Individual Assistance opened for ${county.label}: ${declaration.id}`,
+    );
+    return true;
   }
 
   /** The flat data of a scene event (fields, then variables of the manifest). */
@@ -524,8 +567,8 @@ export class Monitor {
       );
     }
     const message = parts.length > 0 ? join(...parts) : undefined;
-    const connected =
-      !this.failing.has('openfema') && this.counties.length > 0 && this.lastSuccessAt !== null;
+    // Connected while at least one county is read; a failing one is said in the message.
+    const connected = !this.allFailed && this.counties.length > 0 && this.lastSuccessAt !== null;
     const key = JSON.stringify([connected, message]);
     if (key === this.statusMessage) {
       return;

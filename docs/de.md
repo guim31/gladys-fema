@@ -73,7 +73,7 @@ Eine Erklärung betrifft dein County, wenn die FEMA es benennt oder den ganzen B
   bei einer Brandbekämpfungshilfe, die nie eines bekommt);
 - oder Anträge auf Hilfe für Privatpersonen noch möglich sind (bis zur Antragsfrist).
 
-„Hilfe für Privatpersonen“ steht auf 1, solange Anträge einer laufenden Erklärung möglich sind.
+„Hilfe für Privatpersonen“ steht auf 1, solange Anträge einer laufenden Erklärung möglich sind (60 Tage nach der Erklärung, solange die FEMA keine Frist nennt).
 „Öffentliche Hilfe“ und „Risikominderung“ stehen auf 1, wenn eine laufende Erklärung sie umfasst.
 
 ## Gerät
@@ -154,7 +154,8 @@ Aktualisierungsintervall ist, und liefert:
 
 - **„Kein County“**: Gib deinem Haus in Gladys einen Standort (Einstellungen → Häuser) oder trage
   County-FIPS-Codes ein.
-- **„Dein Haus liegt nicht in den USA“**: Trage die FIPS-Codes der zu verfolgenden Countys ein.
+- **„Kein US-County am Standort deines Hauses“**: Das Haus liegt außerhalb der USA (oder sein Standort im Meer): Trage die FIPS-Codes der zu verfolgenden Countys ein.
+- **Das Haus liegt jetzt in einem anderen County**: Im Tab „Entdecken“ erscheint ein neues Gerät; lösche das Gerät des alten Countys, das keine Werte mehr bekommt.
 - **„Ignoriert (kein County-FIPS-Code)“**: Prüfe den Code in der Census-Liste (5 Ziffern, führende Null
   optional: `6037` und `06037` bezeichnen beide Los Angeles County).
 - **„OpenFEMA antwortet nicht“**: Der Dienst ist ausgefallen oder vom Gladys-Rechner nicht erreichbar. Die

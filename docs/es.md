@@ -73,7 +73,7 @@ cuando no está cerrada y:
   días para una ayuda para la gestión de incendios, que nunca la recibe);
 - o las solicitudes de asistencia individual siguen abiertas (hasta la fecha límite).
 
-«Asistencia individual» está a 1 mientras las solicitudes de una declaración en curso estén abiertas.
+«Asistencia individual» está a 1 mientras las solicitudes de una declaración en curso estén abiertas (60 días tras la declaración mientras FEMA no indique una fecha límite).
 «Asistencia pública» y «Mitigación de riesgos» están a 1 cuando una declaración en curso las incluye.
 
 ## Dispositivo
@@ -154,7 +154,8 @@ intervalo de actualización, y devuelve:
 
 - **«Ningún condado»**: indique la ubicación de su casa en Gladys (Ajustes → Casas), o introduzca códigos
   FIPS de condado.
-- **«Su casa no está en Estados Unidos»**: introduzca los códigos FIPS de los condados que desea seguir.
+- **«Ningún condado de EE. UU. en la ubicación de su casa»**: la casa está fuera de Estados Unidos (o su ubicación cae en el mar): introduzca los códigos FIPS de los condados que desea seguir.
+- **La casa cambió de condado**: se ofrece un nuevo dispositivo en la pestaña Descubrir; elimine el dispositivo del condado anterior, que ya no recibe valores.
 - **«Ignorado (no es un código FIPS de condado)»**: compruebe el código en la lista del Census (5
   dígitos, cero inicial opcional: `6037` y `06037` designan ambos el condado de Los Ángeles).
 - **«OpenFEMA no responde»**: el servicio está caído o no es accesible desde el equipo de Gladys. Los

@@ -239,7 +239,7 @@ export const STATUS = {
     femaDown: 'OpenFEMA does not answer: the declarations are not updated.',
     noCounty:
       'No county: type a county FIPS code, or give your house a location in Gladys (Settings, Houses).',
-    outsideUs: 'Your house is not in the United States: type a county FIPS code.',
+    outsideUs: 'No US county at the location of your house: type a county FIPS code.',
     geocoderDown: 'The county of your house cannot be found now (FCC Area API): try again later.',
     invalidCounties: ({ values }) => `Ignored (not a county FIPS code): ${values}.`,
     droppedCounties: ({ values }) => `Ignored (8 counties at most): ${values}.`,
@@ -250,7 +250,8 @@ export const STATUS = {
     femaDown: 'OpenFEMA ne répond pas : les déclarations ne sont pas mises à jour.',
     noCounty:
       'Aucun comté : saisissez un code FIPS de comté, ou indiquez la position de votre maison dans Gladys (Paramètres, Maisons).',
-    outsideUs: "Votre maison n'est pas aux États-Unis : saisissez un code FIPS de comté.",
+    outsideUs:
+      'Aucun comté américain à la position de votre maison : saisissez un code FIPS de comté.',
     geocoderDown:
       "Le comté de votre maison est introuvable pour l'instant (FCC Area API) : réessai plus tard.",
     invalidCounties: ({ values }) => `Ignoré (pas un code FIPS de comté) : ${values}.`,
@@ -262,7 +263,7 @@ export const STATUS = {
     femaDown: 'OpenFEMA antwortet nicht: Die Erklärungen werden nicht aktualisiert.',
     noCounty:
       'Kein County: Trage einen County-FIPS-Code ein oder gib deinem Haus in Gladys einen Standort (Einstellungen, Häuser).',
-    outsideUs: 'Dein Haus liegt nicht in den USA: Trage einen County-FIPS-Code ein.',
+    outsideUs: 'Kein US-County am Standort deines Hauses: Trage einen County-FIPS-Code ein.',
     geocoderDown:
       'Das County deines Hauses ist gerade nicht zu finden (FCC Area API): später neuer Versuch.',
     invalidCounties: ({ values }) => `Ignoriert (kein County-FIPS-Code): ${values}.`,
@@ -274,7 +275,8 @@ export const STATUS = {
     femaDown: 'OpenFEMA no responde: las declaraciones no se actualizan.',
     noCounty:
       'Ningún condado: introduzca un código FIPS de condado o indique la ubicación de su casa en Gladys (Ajustes, Casas).',
-    outsideUs: 'Su casa no está en Estados Unidos: introduzca un código FIPS de condado.',
+    outsideUs:
+      'Ningún condado de EE. UU. en la ubicación de su casa: introduzca un código FIPS de condado.',
     geocoderDown:
       'El condado de su casa no se encuentra por ahora (FCC Area API): se reintentará más tarde.',
     invalidCounties: ({ values }) => `Ignorado (no es un código FIPS de condado): ${values}.`,

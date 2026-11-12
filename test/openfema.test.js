@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import { countyOf } from '../src/counties.js';
 import {
   declarationsUrl,
+  registrationOpen,
   fetchCountyAt,
   fetchDeclarations,
   isActive,
@@ -171,4 +172,15 @@ test('fetchCountyAt: the county of a US house, null abroad, three decimals sent'
   assert.equal(await fetchCountyAt(api.fetch, 48.853, 2.349), null);
   api.fccDown = 500;
   await assert.rejects(fetchCountyAt(api.fetch, 30, -85), /FCC Area API answered HTTP 500/);
+});
+
+test('Individual Assistance without a deadline yet: open for 60 days after the declaration', () => {
+  const declaration = {
+    individual: true,
+    registrationDeadline: null,
+    declaredAt: START - 59 * DAY,
+  };
+  assert.equal(registrationOpen(declaration, START), true);
+  assert.equal(registrationOpen({ ...declaration, declaredAt: START - 61 * DAY }, START), false);
+  assert.equal(registrationOpen({ ...declaration, individual: false }, START), false);
 });

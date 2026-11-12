@@ -74,7 +74,7 @@ cours** quand elle n'est pas clôturée et :
   30 jours pour une aide à la lutte contre l'incendie, qui n'en reçoit jamais) ;
 - ou que les demandes d'aide aux particuliers sont encore ouvertes (jusqu'à la date limite de dépôt).
 
-« Aide aux particuliers » est à 1 tant que les demandes d'une déclaration en cours sont ouvertes. « Aide
+« Aide aux particuliers » est à 1 tant que les demandes d'une déclaration en cours sont ouvertes (60 jours après la déclaration tant que la FEMA ne donne pas de date limite). « Aide
 publique » et « Réduction des risques » sont à 1 quand une déclaration en cours les comprend.
 
 ## Appareil
@@ -154,7 +154,8 @@ mise à jour, et renvoie :
 
 - **« Aucun comté »** : indiquez la position de votre maison dans Gladys (Paramètres → Maisons), ou
   saisissez des codes FIPS de comté.
-- **« Votre maison n'est pas aux États-Unis »** : saisissez les codes FIPS des comtés à suivre.
+- **« Aucun comté américain à la position de votre maison »** : la maison est hors des États-Unis (ou sa position tombe en mer) : saisissez les codes FIPS des comtés à suivre.
+- **La maison a changé de comté** : un nouvel appareil est proposé dans l'onglet Découverte ; supprimez l'appareil de l'ancien comté, qui ne reçoit plus de valeurs.
 - **« Ignoré (pas un code FIPS de comté) »** : vérifiez le code dans la liste du Census (5 chiffres, zéro
   initial facultatif : `6037` et `06037` désignent tous deux le comté de Los Angeles).
 - **« OpenFEMA ne répond pas »** : le service est en panne ou injoignable depuis la machine de Gladys. Les

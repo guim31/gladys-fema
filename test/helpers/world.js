@@ -52,6 +52,8 @@ export function createApi() {
     rows,
     down: false,
     fccDown: false,
+    // County FIPS codes OpenFEMA fails on (503), the others answering.
+    downCounties: new Set(),
     requests: [],
     fccRequests: [],
 
@@ -106,6 +108,10 @@ export function createApi() {
       }
       if (api.down) {
         return { status: api.down, text: async () => 'Service Unavailable' };
+      }
+      const county = /'(\d{2})'.*'(\d{3})'/.exec(url.searchParams.get('$filter') ?? '');
+      if (county && api.downCounties.has(`${county[1]}${county[2]}`)) {
+        return { status: 503, text: async () => 'Service Unavailable' };
       }
       const found = url.pathname.endsWith('/v2/DisasterDeclarationsSummaries')
         ? api.search(url)

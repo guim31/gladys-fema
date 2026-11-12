@@ -202,6 +202,81 @@ test('a burst of declarations is capped per cycle', async (t) => {
   }
   await cycle(w);
   assert.equal(w.fake.sceneEvents.length, MAX_EVENTS_PER_CYCLE);
+  // The rest comes at the next cycle, nothing twice.
+  await cycle(w);
+  assert.equal(w.fake.sceneEvents.length, MAX_EVENTS_PER_CYCLE + 5);
+  const ids = w.fake.sceneEvents.map((e) => e.data.declaration_id);
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test('a scene event Gladys refused is sent again at the next cycle', async (t) => {
+  const api = createApi();
+  const w = await world(t, { api });
+  const original = w.gladys.publishSceneEvent.bind(w.gladys);
+  let refuse = true;
+  t.mock.method(w.gladys, 'publishSceneEvent', (key, data) =>
+    refuse ? Promise.reject(new Error('HTTP 503')) : original(key, data),
+  );
+  api.addDeclaration(BAY, 'EM-3655-FL', {
+    femaDeclarationString: 'EM-3673-FL',
+    disasterNumber: 3673,
+    declarationDate: '2026-11-12T00:00:00.000Z',
+  });
+  await cycle(w);
+  assert.equal(w.fake.sceneEvents.length, 0);
+  refuse = false;
+  await cycle(w);
+  assert.deepEqual(
+    w.fake.sceneEvents.map((e) => e.data.declaration_id),
+    ['EM-3673-FL'],
+  );
+});
+
+test('houses unreadable after a restart: what was seen is not forgotten', async (t) => {
+  const api = createApi();
+  const first = await createWorld({ api });
+  await first.app.stop();
+  api.addDeclaration(BAY, 'EM-3655-FL', {
+    femaDeclarationString: 'EM-3674-FL',
+    disasterNumber: 3674,
+    declarationDate: '2026-11-12T00:00:00.000Z',
+  });
+  const second = await createWorld({ api, dataDir: first.dataDir, connect: false });
+  t.after(() => second.app.stop());
+  const getHouses = second.gladys.getHouses.bind(second.gladys);
+  let down = true;
+  t.mock.method(second.gladys, 'getHouses', () =>
+    down ? Promise.reject(new Error('HTTP 503')) : getHouses(),
+  );
+  await second.gladys.connect();
+  await second.app.ready;
+  await second.monitor.running;
+  assert.deepEqual(discovered(second), []);
+  down = false;
+  await cycle(second);
+  // Bay County was known: the declaration made meanwhile is news.
+  assert.deepEqual(
+    second.fake.sceneEvents.map((e) => e.data.declaration_id),
+    ['EM-3674-FL'],
+  );
+});
+
+test('a scan request publishes the devices again', async (t) => {
+  const w = await world(t);
+  const before = w.fake.requests.filter((r) => r.path.includes('discover')).length;
+  await w.fake.scanRequest();
+  const after = w.fake.requests.filter((r) => r.path.includes('discover')).length;
+  assert.equal(after, before + 1);
+});
+
+test('one county failing: still connected, the others fresh', async (t) => {
+  const api = createApi();
+  const w = await world(t, { api, config: { counties: `${BAY},${HOT_SPRINGS}` } });
+  api.downCounties.add(HOT_SPRINGS);
+  await cycle(w);
+  assert.equal(w.monitor.lastSuccessAt, w.clock.now());
+  assert.equal(w.fake.connectionStatus.connected, true);
+  assert.match(w.fake.connectionStatus.message.en, /OpenFEMA does not answer/);
 });
 
 test('a county added to the configuration starts without triggers', async (t) => {
@@ -227,7 +302,7 @@ test('a house abroad: no device, and the status says to type a county', async (t
   const w = await world(t, { houses: [PARIS] });
   assert.deepEqual(discovered(w), []);
   assert.equal(w.fake.connectionStatus.connected, false);
-  assert.match(w.fake.connectionStatus.message.en, /not in the United States/);
+  assert.match(w.fake.connectionStatus.message.en, /No US county at the location/);
   assert.equal(w.api.requests.length, 0);
 });
 

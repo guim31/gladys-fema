@@ -61,7 +61,7 @@ export function registerHandlers(gladys, options = {}) {
     }
   });
 
-  gladys.onScanRequest(whenReady(() => monitor.publishDiscovered()));
+  gladys.onScanRequest(whenReady(() => monitor.publishDiscovered({ force: true })));
 
   // The devices are published with should_poll: false (refreshed by the
   // monitor's own timer); this only serves a Gladys that would poll anyway.
