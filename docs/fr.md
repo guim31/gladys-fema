@@ -1,67 +1,180 @@
-# Template de démonstration
+# FEMA Disasters
 
-Ceci est la documentation utilisateur de l'intégration. Gladys ré-héberge ce
-fichier et affiche un lien **Documentation** permanent vers lui dans l'écran
-de configuration (dans la langue de l'utilisateur, avec l'anglais en repli) —
-c'est au moment de configurer que l'utilisateur en a le plus besoin. Gardez
-les courtes indications d'accueil dans les blocs `section` du `config_schema`
-du manifest ; mettez ici le pas-à-pas détaillé (captures d'écran, dépannage…).
+Suivez depuis Gladys les **déclarations de catastrophe** de la FEMA, l'agence fédérale américaine de
+gestion des urgences, pour votre comté : ouragans, inondations, incendies, tempêtes hivernales,
+tornades… Quand une catastrophe frappe, le Président (catastrophe majeure, urgence) ou la FEMA (aide à la
+lutte contre l'incendie) la déclare pour une liste de comtés et y ouvre des programmes d'aide : l'**aide
+aux particuliers** (Individual Assistance, à demander sur DisasterAssistance.gov), l'**aide publique**
+(Public Assistance, pour les collectivités) et la **réduction des risques** (Hazard Mitigation).
+
+L'intégration lit ces décisions sur [OpenFEMA](https://www.fema.gov/about/openfema/api), les données
+ouvertes de la FEMA, pour le comté de votre maison ou les comtés que vous choisissez. Sans compte ni clé
+d'API.
+
+Les déclarations sont des décisions administratives, souvent prises des jours après l'événement : ce
+n'est pas un système d'alerte de sécurité. En cas d'urgence, suivez les consignes des autorités locales et
+du National Weather Service. Non affiliée à la FEMA. Ce produit utilise l'API OpenFEMA de la FEMA, sans
+être approuvé par la FEMA.
 
 ## Ce que vous obtenez
 
-Six appareils de démonstration apparaissent après l'installation : une
-station météo (vraies données Open-Meteo), un interrupteur, une lampe
-variable, une prise connectée avec mesure de puissance, un détecteur de
-mouvement et une caméra.
+- Un **appareil par comté** : catastrophe déclarée (oui / non), type d'incident et date de la dernière
+  déclaration, aide aux particuliers, aide publique et réduction des risques ouvertes (oui / non), et le
+  nombre de déclarations sur 12 mois.
+- Un **widget de tableau de bord** : une ligne par comté, ses déclarations en cours, ses programmes, la
+  date limite de demande et des liens vers la page FEMA de chaque catastrophe et vers
+  DisasterAssistance.gov.
+- Deux **déclencheurs de scène** : une nouvelle déclaration pour votre comté, et l'aide aux particuliers
+  ouverte (avec la date limite de demande).
+- Une **action de scène** qui lit les déclarations en cours en une phrase, à envoyer par message ou à
+  faire lire à voix haute.
+
+## Prérequis
+
+- Gladys Assistant 5.3 ou plus récent.
+- Un accès Internet depuis la machine de Gladys (l'intégration lit `www.fema.gov`, et `geo.fcc.gov` pour
+  trouver le comté de votre maison).
+- Une maison aux États-Unis (les 50 États, le district de Columbia, Porto Rico et les territoires) : sa
+  position dans Gladys (Paramètres → Maisons), ou des codes FIPS de comté saisis dans la configuration.
 
 ## Configuration
 
-1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez la **latitude** et la **longitude** que la station météo de
-   démonstration doit observer (Paris par défaut), et choisissez votre unité
-   de température. L'**intervalle de rafraîchissement** règle la fréquence
-   de lecture de la station météo et de la puissance de la prise : toutes
-   les 5 minutes par défaut, toutes les minutes au plus.
-3. Enregistrez : les appareils apparaissent dans l'onglet **Découverte**,
-   prêts à être ajoutés.
+### Réglages
 
-Le réglage **Préférer la connexion locale** pilote la prise de
-démonstration : elle affiche en badge le canal réellement utilisé (local ou
-cloud), avec un point orange quand elle fonctionne en mode dégradé (local
-refusé, bascule cloud).
+| Réglage                         | Rôle                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Codes FIPS des comtés           | Jusqu'à 8 codes de comté à 5 chiffres, séparés par des virgules. Vide : le comté de votre maison. |
+| Intervalle de mise à jour       | 30 minutes, 1 heure (par défaut), 3 ou 6 heures.                                                  |
+| Langue des noms et des messages | Noms des fonctionnalités (à leur création) et textes envoyés aux scènes. Français par défaut.     |
 
-## Actions
+Enregistrez, puis ouvrez l'onglet **Découverte** de l'intégration et créez l'appareil de chaque comté. Le
+bouton **Afficher les déclarations en cours** de la configuration répond tout de suite : un moyen rapide
+de vérifier les réglages.
 
-- **Tester le fournisseur météo** — effectue une requête en direct vers
-  Open-Meteo et affiche la température et l'humidité actuelles sous le
-  bouton.
-- **Identifier un appareil** — choisissez un de vos appareils dans la liste
-  et il se signale (la lampe de démonstration « clignote » dans les logs).
+### Trouver votre comté
 
-## Scènes
+Laissez le champ vide : l'intégration envoie une fois la position de votre maison, arrondie à trois
+décimales (environ 100 m), à la [FCC Area API](https://geo.fcc.gov/api/census/), qui renvoie son comté.
+Elle ne la redemande que si la position de la maison change.
 
-L'intégration ajoute ses propres cartes à l'éditeur de scènes (Gladys 5.1
-ou plus récent), dans la catégorie **Intégrations** :
+Pour suivre d'autres comtés (de la famille, une résidence secondaire), saisissez leurs **codes FIPS** :
+2 chiffres pour l'État, puis 3 pour le comté. Exemples : `12086` comté de Miami-Dade, Floride ; `06037`
+comté de Los Angeles, Californie ; `22071` paroisse d'Orléans, Louisiane. Le Census Bureau publie la
+[liste des codes](https://www.census.gov/library/reference/code-lists/ansi.html). Un code qu'elle ne
+connaît pas est ignoré et signalé dans le statut de la configuration.
 
-- **Mouvement détecté** (déclencheur) — lance la scène quand un détecteur
-  de démonstration voit bouger quelque chose. Choisissez éventuellement le
-  détecteur et ce qui a bougé (personne, animal) ; laissés vides, toute
-  détection correspond. Les actions suivantes peuvent lire ce qui a bougé
-  avec `{{triggerEvent.data.target}}`.
-- **Identifier un appareil** (action) — fait se signaler l'appareil choisi.
-  Elle indique si l'appareil a pu se signaler, pour que les actions
-  suivantes puissent en dépendre.
+### Déclaration en cours
 
-## Tableau de bord
+Une déclaration concerne votre comté quand la FEMA le désigne, ou l'État entier (« Statewide »). Les
+déclarations tribales, faites pour des terres tribales, ne sont pas comptées. Une déclaration est **en
+cours** quand elle n'est pas clôturée et :
 
-Ajoutez le widget **État de la démo** à un tableau de bord : il affiche en
-direct la température de la station météo et la puissance de la prise du
-bureau, la connexion utilisée par la prise (en orange si dégradée) et la
-position observée. Son bouton **Identifier la lampe** fait se signaler la
-lampe de démonstration.
+- qu'elle date de moins de 30 jours ;
+- ou que sa période d'incident est encore ouverte (un incident sans date de fin compte un an au plus,
+  30 jours pour une aide à la lutte contre l'incendie, qui n'en reçoit jamais) ;
+- ou que les demandes d'aide aux particuliers sont encore ouvertes (jusqu'à la date limite de dépôt).
+
+« Aide aux particuliers » est à 1 tant que les demandes d'une déclaration en cours sont ouvertes (60 jours après la déclaration tant que la FEMA ne donne pas de date limite). « Aide
+publique » et « Réduction des risques » sont à 1 quand une déclaration en cours les comprend.
+
+## Appareil
+
+| Fonctionnalité           | Type     | Valeurs                                                  |
+| ------------------------ | -------- | -------------------------------------------------------- |
+| Catastrophe déclarée     | Binaire  | 1 quand une déclaration est en cours                     |
+| Type d'incident          | Texte    | Dernière déclaration, ex. « Ouragan · Hurricane Isaias » |
+| Date de déclaration      | Texte    | Sa date et son numéro, ex. « 27/10/2026 (DR-4955) »      |
+| Aide aux particuliers    | Binaire  | 1 tant que les demandes sont ouvertes                    |
+| Aide publique            | Binaire  | 1 quand une déclaration en cours la comprend             |
+| Réduction des risques    | Binaire  | 1 quand une déclaration en cours la comprend             |
+| Déclarations sur 12 mois | Compteur | Déclarations faites sur les 365 derniers jours           |
+
+L'appareil s'appelle « FEMA · comté, État » : renommez-le à votre guise dans Gladys. Les valeurs ne sont
+envoyées que lorsqu'elles changent, et de nouveau toutes les 12 heures.
+
+## Widget de tableau de bord
+
+Ajoutez le widget **Déclarations FEMA** à un tableau de bord. Il affiche le nombre de déclarations en
+cours, puis une ligne par comté avec une pastille rouge « Déclarée » ou verte « Aucune ». Touchez une
+ligne pour le détail : numéro, type et date de chaque déclaration, période d'incident, programmes, date
+limite de demande et liens. Le pied donne l'heure de la dernière lecture et un lien vers la page des
+déclarations de la FEMA (masquable dans les réglages du widget).
+
+## Déclencheurs de scène
+
+**FEMA : nouvelle déclaration pour mon comté.** Une déclaration faite dans les 90 derniers jours apparaît
+pour un comté suivi. Filtres : le comté (son appareil) et les types de déclaration (catastrophe majeure,
+urgence, lutte contre l'incendie). Variables : `county_name`, `declaration_id` (DR-4955-FL),
+`declaration_type_name`, `incident_type` (tel que la FEMA l'écrit, en anglais), `incident_type_name`,
+`title`, `declaration_date`, `individual_assistance` (vrai quand les demandes sont ouvertes), `summary`
+(une phrase) et `url`.
+
+**FEMA : aide aux particuliers ouverte.** Les habitants d'un comté suivi peuvent demander l'aide de la
+FEMA : avec une nouvelle déclaration, ou plus tard, quand la FEMA modifie une déclaration pour ajouter le
+comté au programme. Filtre : le comté. Variables : `county_name`, `declaration_id`, `incident_type_name`,
+`title`, `deadline` (dernier jour pour faire la demande, quand la FEMA le donne), `summary`, `url` et
+`registration_url`.
+
+Les déclarations déjà listées quand un comté commence à être suivi ne déclenchent rien : ce ne sont pas
+des nouvelles. Un redémarrage de l'intégration non plus.
+
+## Action de scène
+
+**FEMA : lire les déclarations** relit OpenFEMA si la dernière lecture date de plus d'un intervalle de
+mise à jour, et renvoie :
+
+- `text` : les déclarations en cours de chaque comté, en une phrase ;
+- `active_count` : le nombre de déclarations en cours ;
+- `assistance_open` : vrai quand les demandes d'aide aux particuliers sont ouvertes dans un comté suivi.
+
+## Exemples de scènes
+
+- **Prévenir la famille** : sur « aide aux particuliers ouverte », envoyer
+  `{{triggerEvent.data.summary}}` et le lien `{{triggerEvent.data.registration_url}}` par message.
+- **Rappel hebdomadaire** : chaque lundi, lancer « lire les déclarations », puis envoyer son texte si
+  `assistance_open` est vrai.
+- **Nouvelle déclaration** : sur une catastrophe majeure déclarée pour votre comté, envoyer
+  `{{triggerEvent.data.summary}}` et `{{triggerEvent.data.url}}`.
+
+## Sources des données, conditions et quotas
+
+- Déclarations : jeu de données OpenFEMA « Disaster Declarations Summaries » (v2), données publiques du
+  gouvernement américain, lues sans compte. Ce produit utilise l'API OpenFEMA de la FEMA, sans être
+  approuvé par la FEMA. Le gouvernement fédéral et la FEMA ne garantissent ni les données ni les analyses
+  qui en sont tirées une fois les données récupérées sur leurs sites. Voir les
+  [conditions d'OpenFEMA](https://www.fema.gov/about/openfema/terms-conditions).
+- Comté de la maison : [FCC Area API](https://geo.fcc.gov/api/census/), publique, sans compte.
+- Noms et codes des comtés : US Census Bureau, codes FIPS de 2020 (le millésime qu'utilise la FEMA),
+  fournis avec l'intégration.
+- Quotas : OpenFEMA n'en publie aucun pour cet usage. L'intégration envoie une requête par comté et par
+  intervalle de mise à jour (toutes les heures par défaut), et une requête à la FCC quand la maison change
+  de position.
 
 ## Dépannage
 
-L'intégration journalise tout ce qu'elle fait : consultez les logs de
-l'intégration depuis l'interface Gladys (ou `docker logs` sur l'hôte) avec
-`LOG_LEVEL=debug` pour le détail complet.
+- **« Aucun comté »** : indiquez la position de votre maison dans Gladys (Paramètres → Maisons), ou
+  saisissez des codes FIPS de comté.
+- **« Aucun comté américain à la position de votre maison »** : la maison est hors des États-Unis (ou sa position tombe en mer) : saisissez les codes FIPS des comtés à suivre.
+- **La maison a changé de comté** : un nouvel appareil est proposé dans l'onglet Découverte ; supprimez l'appareil de l'ancien comté, qui ne reçoit plus de valeurs.
+- **« Ignoré (pas un code FIPS de comté) »** : vérifiez le code dans la liste du Census (5 chiffres, zéro
+  initial facultatif : `6037` et `06037` désignent tous deux le comté de Los Angeles).
+- **« OpenFEMA ne répond pas »** : le service est en panne ou injoignable depuis la machine de Gladys. Les
+  dernières valeurs restent ; l'intégration réessaie à chaque mise à jour et le signale une fois dans ses
+  logs.
+- **Aucun déclencheur après un changement de réglages** : normal, les déclarations déjà là ne sont pas des
+  nouvelles.
+- **Les noms des fonctionnalités sont dans la mauvaise langue** : ils sont fixés à la création de
+  l'appareil. Changez la langue, supprimez l'appareil, puis recréez-le depuis l'onglet Découverte.
+- Logs : page de l'intégration dans Gladys, onglet Logs. `LOG_LEVEL=debug` donne une ligne par lecture.
+
+## Limites
+
+- Les déclarations sont des décisions prises après un événement, parfois des semaines plus tard : elles
+  disent où va l'aide fédérale, pas où est le danger. Pour les alertes, voyez le National Weather Service
+  et vos autorités locales.
+- Les centres d'aide (Disaster Recovery Centers) ne sont pas listés : la FEMA les publie sur son site et
+  dans son application.
+- Les types d'incident sont traduits ; les intitulés des déclarations, les noms des comtés et les numéros
+  FEMA restent en anglais.
+- Testée contre le vrai service OpenFEMA le 12/11/2026 (un comté touché, un comté calme, des codes
+  invalides) ; pas encore dans une vraie instance de Gladys : vos retours sont les bienvenus sur le forum.

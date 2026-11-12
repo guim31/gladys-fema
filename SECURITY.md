@@ -30,6 +30,14 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+The integration needs no account and stores no secret. It reads the public OpenFEMA API
+(`www.fema.gov`, HTTPS, no key) and the houses of Gladys (the `location` access of the manifest).
+When no county is typed, it sends the location of the house, rounded to three decimals (about
+100 m), to the public FCC Area API (`geo.fcc.gov`, HTTPS) to find its county, once and again only
+when the house moves. Under `/data` it keeps one file, `fema.json`: per followed county code, the
+FEMA declarations already seen, nothing about the user. The coordinates of the house are never
+written to `/data` nor to the logs.
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+and the OpenFEMA and FCC services.

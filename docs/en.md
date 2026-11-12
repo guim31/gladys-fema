@@ -1,61 +1,169 @@
-# Demo Devices Template
+# FEMA Disasters
 
-This is the user documentation of the integration. Gladys re-hosts this file
-and shows a permanent **Documentation** link to it in the Configuration screen
-(in the user's language, with English as the fallback) — it is when
-configuring that the user needs it most. Keep the short onboarding hints in
-the `section` blocks of the manifest `config_schema`; put the long
-step-by-step (screenshots, troubleshooting…) here.
+Follow the **disaster declarations** of the US Federal Emergency Management Agency (FEMA) for your
+county from Gladys: hurricanes, floods, fires, winter storms, tornadoes… When a disaster hits, the
+President (major disaster, emergency) or FEMA (fire management assistance) declares it for a list of
+counties, and opens aid programs there: **Individual Assistance** (help for households, to apply for
+on DisasterAssistance.gov), **Public Assistance** (for local governments) and **Hazard Mitigation**.
+
+The integration reads these decisions from [OpenFEMA](https://www.fema.gov/about/openfema/api), the
+open data of FEMA, for the county of your house or the counties you choose. No account, no API key.
+
+Declarations are administrative decisions, often made days after the event: this is not a safety alert
+system. In an emergency, follow the instructions of your local authorities and the National Weather
+Service. Not affiliated with FEMA. This product uses the FEMA OpenFEMA API, but is not endorsed by
+FEMA.
 
 ## What you get
 
-Six demo devices show up after installation: a weather station (real data
-from Open-Meteo), a switch, a dimmable light, a smart plug with power
-metering, a motion sensor and a camera.
+- One **device per county**: disaster declared (yes / no), incident type and declaration date of the
+  latest declaration, Individual Assistance, Public Assistance and Hazard Mitigation open (yes / no),
+  and the number of declarations over 12 months.
+- A **dashboard widget**: one row per county, its active declarations, programs, registration deadline
+  and links to the FEMA page of each disaster and to DisasterAssistance.gov.
+- Two **scene triggers**: a new declaration for your county, and Individual Assistance opened (with
+  the registration deadline).
+- A **scene action** that reads the active declarations as one sentence, to send by message or have
+  it read aloud.
+
+## Requirements
+
+- Gladys Assistant 5.3 or later.
+- Internet access from the Gladys host (the integration reads `www.fema.gov`, and `geo.fcc.gov` to find
+  the county of your house).
+- A house in the United States (the 50 states, the District of Columbia, Puerto Rico and the
+  territories): its location in Gladys (Settings → Houses), or county FIPS codes typed in the
+  configuration.
 
 ## Configuration
 
-1. Open the **Configuration** tab of the integration.
-2. Set the **latitude** and **longitude** the demo weather station should
-   observe (they default to Paris), and pick your temperature unit.
-   The **refresh interval** sets how often the weather station and the
-   plug's power are read: every 5 minutes by default, every minute at most.
-3. Save: the devices appear in the **Discovery** tab, ready to be added.
+### Settings
 
-The **Prefer the local connection** toggle drives the demo plug: it reports
-the channel it actually uses as a badge (local or cloud), with an orange dot
-when it runs degraded (local refused, cloud fallback).
+| Setting                            | What it does                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------ |
+| County FIPS codes                  | Up to 8 county codes of 5 digits, separated by commas. Empty: the county of your house.    |
+| Refresh interval                   | 30 minutes, 1 hour (by default), 3 or 6 hours.                                             |
+| Language of the names and messages | Names of the features (at their creation) and texts sent to the scenes. French by default. |
 
-## Actions
+Save, then open the **Discover** tab of the integration and create the device of each county. The
+**Show the current declarations** button of the configuration answers right away: a quick way to check
+the settings.
 
-- **Test the weather provider** — performs a live request to Open-Meteo and
-  shows the current temperature and humidity under the button.
-- **Identify a device** — pick one of your devices in the list and it will
-  signal itself (the demo light "blinks" in the logs).
+### Finding your county
 
-## Scenes
+Leave the field empty: the integration sends the location of your house, rounded to three decimals
+(about 100 m), to the [FCC Area API](https://geo.fcc.gov/api/census/) once, and gets its county. It asks
+again only when the location of the house changes.
 
-The integration adds its own cards to the scene editor (Gladys 5.1 or
-later), under the **Integrations** category:
+To follow other counties (family, a second home), type their **FIPS codes**: 2 digits for the state,
+then 3 for the county. Examples: `12086` Miami-Dade County, Florida; `06037` Los Angeles County,
+California; `22071` Orleans Parish, Louisiana. The Census Bureau publishes the
+[list of the codes](https://www.census.gov/library/reference/code-lists/ansi.html). A code it does
+not know is ignored and shown in the status of the configuration.
 
-- **Motion detected** (trigger) — starts the scene when a demo motion sensor
-  sees something move. Optionally pick the sensor and what moved (person,
-  animal); left empty, any detection matches. The following actions can
-  read what moved with `{{triggerEvent.data.target}}`.
-- **Identify a device** (action) — makes the chosen device signal itself.
-  It returns whether the device could signal itself, so the following
-  actions can depend on it.
+### Active declaration
 
-## Dashboard
+A declaration covers your county when FEMA designates it, or the whole state ("Statewide"). Tribal
+declarations, made for tribal lands, are not counted. A declaration is **active** when it is not closed
+out and:
 
-Add the **Demo status** widget to a dashboard: it shows the live
-temperature of the weather station and the power of the office plug, the
-connection the plug currently uses (orange when degraded) and the observed
-location. Its **Identify the light** button makes the demo light signal
-itself.
+- it was made less than 30 days ago;
+- or its incident period is still open (an incident without an end date counts for one year at most,
+  30 days for a fire management declaration, which never gets one);
+- or its Individual Assistance registration is still open (until the last filing date).
+
+"Individual Assistance" is on while the registration of an active declaration is open (60 days after the declaration while FEMA gives no deadline). "Public
+Assistance" and "Hazard Mitigation" are on when an active declaration includes them.
+
+## Device
+
+| Feature                   | Type    | Values                                                  |
+| ------------------------- | ------- | ------------------------------------------------------- |
+| Disaster declared         | Binary  | 1 when a declaration is active                          |
+| Incident type             | Text    | Latest declaration, e.g. "Hurricane · Hurricane Isaias" |
+| Declaration date          | Text    | Its date and number, e.g. "10/27/2026 (DR-4955)"        |
+| Individual Assistance     | Binary  | 1 while registration is open                            |
+| Public Assistance         | Binary  | 1 when an active declaration includes it                |
+| Hazard Mitigation         | Binary  | 1 when an active declaration includes it                |
+| Declarations in 12 months | Counter | Declarations made over the last 365 days                |
+
+The device is named "FEMA · county, state": rename it in Gladys as you like. The values are sent only
+when they change, and again every 12 hours.
+
+## Dashboard widget
+
+Add the **FEMA declarations** widget to a dashboard. It shows the number of active declarations, then
+one row per county with a red "Declared" or green "None" badge. Tap a row for the details: number, type
+and date of each declaration, incident period, programs, registration deadline, and the links. The
+footer gives the time of the last reading and a link to the FEMA declarations page (it can be hidden
+in the widget settings).
+
+## Scene triggers
+
+**FEMA: new declaration for my county.** A declaration made in the last 90 days appears for a followed
+county. Filters: the county (its device), and the declaration types (major disaster, emergency, fire
+management). Variables: `county_name`, `declaration_id` (DR-4955-FL), `declaration_type_name`,
+`incident_type` (as FEMA writes it, in English), `incident_type_name`, `title`, `declaration_date`,
+`individual_assistance` (true when registration is open), `summary` (one sentence) and `url`.
+
+**FEMA: Individual Assistance opened.** Residents of a followed county can apply for FEMA assistance:
+with a new declaration, or later, when FEMA amends a declaration to add the county to the program.
+Filter: the county. Variables: `county_name`, `declaration_id`, `incident_type_name`, `title`,
+`deadline` (last day to register, when FEMA gives it), `summary`, `url` and `registration_url`.
+
+The declarations already listed when a county is first followed fire nothing: they are not news. A
+restart of the integration fires nothing either.
+
+## Scene action
+
+**FEMA: read the declarations** reads OpenFEMA again if the last reading is older than the refresh
+interval, and returns:
+
+- `text`: the active declarations of each county, in one sentence;
+- `active_count`: the number of active declarations;
+- `assistance_open`: true when Individual Assistance registration is open in a followed county.
+
+## Scene examples
+
+- **Tell the family**: on "Individual Assistance opened", send `{{triggerEvent.data.summary}}` and the
+  link `{{triggerEvent.data.registration_url}}` by message.
+- **Weekly reminder**: every Monday, run "read the declarations", then send its text if
+  `assistance_open` is true.
+- **New declaration**: on a major disaster declared for your county, send `{{triggerEvent.data.summary}}`
+  and `{{triggerEvent.data.url}}`.
+
+## Data sources, terms and quotas
+
+- Declarations: OpenFEMA dataset "Disaster Declarations Summaries" (v2), public data of the US
+  government, read without an account. This product uses the FEMA OpenFEMA API, but is not endorsed by
+  FEMA. The Federal Government or FEMA cannot vouch for the data or analyses derived from these data
+  after the data have been retrieved from the Agency's website(s). See the
+  [OpenFEMA terms and conditions](https://www.fema.gov/about/openfema/terms-conditions).
+- County of the house: [FCC Area API](https://geo.fcc.gov/api/census/), public, without an account.
+- County names and codes: US Census Bureau, 2020 FIPS codes (the vintage FEMA uses), shipped with the
+  integration.
+- Quotas: OpenFEMA publishes none for this use. The integration sends one request per county per refresh
+  interval (every hour by default), and one request to the FCC when the house moves.
 
 ## Troubleshooting
 
-The integration logs everything it does: check the integration logs from the
-Gladys UI (or `docker logs` on the host) with `LOG_LEVEL=debug` for the full
-detail.
+- **"No county"**: give your house a location in Gladys (Settings → Houses), or type county FIPS codes.
+- **"No US county at the location of your house"**: the house is outside the United States (or its location is in the sea): type the FIPS codes of the counties to follow.
+- **The house moved to another county**: a new device is offered in the Discover tab; delete the device of the old county, which no longer gets values.
+- **"Ignored (not a county FIPS code)"**: check the code in the Census list (5 digits, leading zero
+  included or not: `6037` and `06037` both mean Los Angeles County).
+- **"OpenFEMA does not answer"**: the service is down or unreachable from the Gladys host. The last
+  values stay; the integration tries again at every refresh and says so in its logs once.
+- **No trigger after a change of settings**: expected, the declarations already there are not news.
+- **The names of the features are in the wrong language**: they are set when the device is created.
+  Change the language, delete the device, then create it again from the Discover tab.
+- Logs: the integration page of Gladys, Logs tab. Set `LOG_LEVEL=debug` for a line per reading.
+
+## Limits
+
+- Declarations are decisions taken after an event, sometimes weeks later: they say where federal aid
+  goes, not where danger is. For warnings, see the National Weather Service and your local authorities.
+- Disaster Recovery Centers are not listed: FEMA publishes them on its own site and the FEMA app.
+- Incident types are translated; declaration titles, county names and FEMA numbers stay in English.
+- Tested against the real OpenFEMA service on November 12, 2026 (an active county, a calm county, invalid
+  codes); not yet in a real Gladys instance: feedback welcome on the forum.

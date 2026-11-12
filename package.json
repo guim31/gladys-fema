@@ -1,8 +1,8 @@
 {
-  "name": "gladys-integration-template-js",
+  "name": "gladys-fema",
   "version": "1.0.0",
   "private": true,
-  "description": "Official starter template to build an external integration for Gladys Assistant with the JavaScript SDK.",
+  "description": "Gladys Assistant integration: FEMA disaster declarations (hurricanes, floods, fires, winter storms…) and open aid programs for your US county, from OpenFEMA.",
   "type": "module",
   "main": "index.js",
   "scripts": {
